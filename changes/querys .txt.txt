@@ -1,0 +1,266 @@
+USE [rmcpl]
+GO
+
+/****** Object:  View [dbo].[V_SampleRequisition]    Script Date: 28-10-2024 15:38:23 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+
+CREATE VIEW [dbo].[V_SampleRequisition]
+AS
+SELECT TOP (100) PERCENT 
+    dbo.RMCPL_REQUISITION.RMCPL_SR_NO, 
+    dbo.RMCPL_REQUISITION.RMCPL_DATE, 
+    dbo.RMCPL_REQUISITION.RMCPL_PACK_SIZE, 
+    dbo.RMCPL_REQUISITION.RMCPL_PACK_SIZEApr, 
+    dbo.RMCPL_REQUISITION.RMCPL_QTY_REQUIRED, 
+    dbo.RMCPL_REQUISITION.RMCPL_QTY_APPROVED, 
+    dbo.RMCPL_REQUISITION.RMCPL_QTY_PENDING, 
+    dbo.RMCPL_REQUISITION.RMCPL_EMP_CD, 
+    dbo.RMCPL_REQUISITION.RMCPL_SAMPLE_CD, 
+    dbo.RMCPL_REQUISITION.RMCPL_SAMPLE_CDApr, 
+    dbo.RMCPL_REQUISITION.Rmcpl_Approved_date, 
+    dbo.RMCPL_REQUISITION.RMCPL_EXPECTED_DT, 
+    dbo.RMCPL_REQUISITION.ApprovedBy, 
+    dbo.RMCPL_REQUISITION.Inserteddate, 
+    dbo.RMCPL_REQUISITION.remarks, 
+    dbo.RMCPL_REQUISITION.AprRemarks, 
+    dbo.RMCPL_REQUISITION.RMCPL_USER_TYPE, 
+    dbo.RMCPL_REQUISITION.DisplayByUserCD, 
+    dbo.RMCPL_REQUISITION.OrganisationName, 
+    dbo.RMCPL_REQUISITION.CustomerType, 
+    dbo.RMCPL_REQUISITION.CustomerEmail, 
+    dbo.RMCPL_REQUISITION.CustomerContactNo, 
+    dbo.RMCPL_REQUISITION.Department, 
+    dbo.RMCPL_REQUISITION.SalesManager, 
+    dbo.RMCPL_REQUISITION.CustomerAddress, 
+    dbo.RMCPL_REQUISITION.IsHODApproved, 
+    dbo.RMCPL_REQUISITION.HODApprovalDate, 
+    dbo.RMCPL_SAMPLE_MASTER.RMCPL_SAMPLE_NAME, 
+    dbo.SampleReqiziationStock.IsAvailableInStores, 
+    dbo.SampleReqiziationStock.IsSampleAvailableInPlant, 
+    dbo.DepartmentRequisitionDiv.DepartmentRequisitionDivID, 
+    dbo.RMCPL_REQUISITION.RMCPL_TID, 
+    dbo.SamplePreparation.SampleReqizitionID, 
+    dbo.SamplePreparation.SampleID,
+    dbo.PackingLabellingCOAGatePass.PackagingID,
+    dbo.QA_Verification.QA_VerificationId,
+    dbo.IfDelay.IfDelayId,
+    dbo.CourierDetails.CourierDetailsId,
+    dbo.InformCustomerDispatchDetails.InformCustomerDispatchDetailsID,
+    dbo.TrackDispatchUntildelivery.TrackDispatchUntildeliveryID,
+    dbo.CustomerSampleReceiptCheck.CustomerSampleReceiptCheckID,
+    dbo.CustomerSampleApproval.CustomerSampleApprovalID,
+    dbo.ReceivingOfPOfromCustomer.ReceivingOfPOfromCustomerID,
+
+    -- Concatenate remarks using FOR XML PATH
+   STUFF((SELECT '; ' + r.UserName + ' - ' + r.Remarks
+           FROM dbo.Remarks r
+           WHERE r.SampleReqizitionID = dbo.RMCPL_REQUISITION.RMCPL_TID
+           FOR XML PATH('')), 1, 2, '') AS AllRemarks,
+
+    -- Courier Tracking Details
+    dbo.CourierDetails.CourierServiceName,
+    dbo.CourierDetails.CourierTrackingNo,
+    dbo.CourierDetails.CourierDate,
+    dbo.CourierDetails.EstimatedDateOfDelivery,
+	dbo.DeleteSample.DeleteID
+
+FROM 
+    dbo.RMCPL_REQUISITION 
+INNER JOIN
+    dbo.RMCPL_SAMPLE_MASTER ON dbo.RMCPL_REQUISITION.RMCPL_SAMPLE_CD = dbo.RMCPL_SAMPLE_MASTER.RMCPL_SAMPLE_CD 
+LEFT OUTER JOIN
+    dbo.SampleReqiziationStock ON dbo.RMCPL_REQUISITION.RMCPL_TID = dbo.SampleReqiziationStock.SampleReqizitionID 
+LEFT OUTER JOIN
+    dbo.DepartmentRequisitionDiv ON dbo.RMCPL_REQUISITION.RMCPL_TID = dbo.DepartmentRequisitionDiv.SampleReqizitionID 
+LEFT OUTER JOIN
+    dbo.SamplePreparation ON dbo.RMCPL_REQUISITION.RMCPL_TID = dbo.SamplePreparation.SampleReqizitionID 
+LEFT OUTER JOIN
+    dbo.PackingLabellingCOAGatePass ON dbo.RMCPL_REQUISITION.RMCPL_TID = dbo.PackingLabellingCOAGatePass.SampleReqizitionID 
+LEFT OUTER JOIN
+    dbo.QA_Verification ON dbo.RMCPL_REQUISITION.RMCPL_TID = dbo.QA_Verification.SampleReqizitionID  
+LEFT OUTER JOIN
+    dbo.IfDelay ON dbo.RMCPL_REQUISITION.RMCPL_TID = dbo.IfDelay.SampleReqizitionID 
+LEFT OUTER JOIN
+    dbo.CourierDetails ON dbo.RMCPL_REQUISITION.RMCPL_TID = dbo.CourierDetails.SampleReqizitionID 
+LEFT OUTER JOIN
+    dbo.InformCustomerDispatchDetails ON dbo.RMCPL_REQUISITION.RMCPL_TID = dbo.InformCustomerDispatchDetails.SampleReqizitionID 
+LEFT OUTER JOIN
+    dbo.TrackDispatchUntildelivery ON dbo.RMCPL_REQUISITION.RMCPL_TID = dbo.TrackDispatchUntildelivery.SampleReqizitionID 
+LEFT OUTER JOIN
+    dbo.CustomerSampleReceiptCheck ON dbo.RMCPL_REQUISITION.RMCPL_TID = dbo.CustomerSampleReceiptCheck.SampleReqizitionID 
+LEFT OUTER JOIN
+    dbo.CustomerSampleApproval ON dbo.RMCPL_REQUISITION.RMCPL_TID = dbo.CustomerSampleApproval.SampleReqizitionID 
+LEFT OUTER JOIN
+    dbo.ReceivingOfPOfromCustomer ON dbo.RMCPL_REQUISITION.RMCPL_TID = dbo.ReceivingOfPOfromCustomer.SampleReqizitionID
+LEFT OUTER JOIN
+    dbo.DeleteSample ON dbo.RMCPL_REQUISITION.RMCPL_TID = dbo.DeleteSample.SampleReqizitionID
+
+ORDER BY 
+    dbo.RMCPL_REQUISITION.RMCPL_TID DESC;
+
+
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
+Begin DesignProperties = 
+   Begin PaneConfigurations = 
+      Begin PaneConfiguration = 0
+         NumPanes = 4
+         Configuration = "(H (1[40] 4[20] 2[20] 3) )"
+      End
+      Begin PaneConfiguration = 1
+         NumPanes = 3
+         Configuration = "(H (1 [50] 4 [25] 3))"
+      End
+      Begin PaneConfiguration = 2
+         NumPanes = 3
+         Configuration = "(H (1 [50] 2 [25] 3))"
+      End
+      Begin PaneConfiguration = 3
+         NumPanes = 3
+         Configuration = "(H (4 [30] 2 [40] 3))"
+      End
+      Begin PaneConfiguration = 4
+         NumPanes = 2
+         Configuration = "(H (1 [56] 3))"
+      End
+      Begin PaneConfiguration = 5
+         NumPanes = 2
+         Configuration = "(H (2 [66] 3))"
+      End
+      Begin PaneConfiguration = 6
+         NumPanes = 2
+         Configuration = "(H (4 [50] 3))"
+      End
+      Begin PaneConfiguration = 7
+         NumPanes = 1
+         Configuration = "(V (3))"
+      End
+      Begin PaneConfiguration = 8
+         NumPanes = 3
+         Configuration = "(H (1[56] 4[18] 2) )"
+      End
+      Begin PaneConfiguration = 9
+         NumPanes = 2
+         Configuration = "(H (1 [75] 4))"
+      End
+      Begin PaneConfiguration = 10
+         NumPanes = 2
+         Configuration = "(H (1[66] 2) )"
+      End
+      Begin PaneConfiguration = 11
+         NumPanes = 2
+         Configuration = "(H (4 [60] 2))"
+      End
+      Begin PaneConfiguration = 12
+         NumPanes = 1
+         Configuration = "(H (1) )"
+      End
+      Begin PaneConfiguration = 13
+         NumPanes = 1
+         Configuration = "(V (4))"
+      End
+      Begin PaneConfiguration = 14
+         NumPanes = 1
+         Configuration = "(V (2))"
+      End
+      ActivePaneConfig = 0
+   End
+   Begin DiagramPane = 
+      Begin Origin = 
+         Top = 0
+         Left = 0
+      End
+      Begin Tables = 
+         Begin Table = "RMCPL_REQUISITION"
+            Begin Extent = 
+               Top = 6
+               Left = 38
+               Bottom = 216
+               Right = 245
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+         Begin Table = "RMCPL_SAMPLE_MASTER"
+            Begin Extent = 
+               Top = 6
+               Left = 283
+               Bottom = 154
+               Right = 504
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+      End
+   End
+   Begin SQLPane = 
+   End
+   Begin DataPane = 
+      Begin ParameterDefaults = ""
+      End
+   End
+   Begin CriteriaPane = 
+      Begin ColumnWidths = 11
+         Column = 1440
+         Alias = 900
+         Table = 1170
+         Output = 720
+         Append = 1400
+         NewValue = 1170
+         SortType = 1350
+         SortOrder = 1410
+         GroupBy = 1350
+         Filter = 1350
+         Or = 1350
+         Or = 1350
+         Or = 1350
+      End
+   End
+End
+' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'V_SampleRequisition'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'V_SampleRequisition'
+GO
+
+USE [rmcpl]
+GO
+
+/****** Object:  StoredProcedure [dbo].[InsertDeleteSample]    Script Date: 28-10-2024 15:40:09 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+CREATE PROCEDURE [dbo].[InsertDeleteSample]
+    @SampleReqizitionID INT = NULL,
+    @SRRefID VARCHAR(255) = NULL,
+    @Reason VARCHAR(255) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO [dbo].[DeleteSample] (SampleReqizitionID, SRRefID, Reason)
+    VALUES (@SampleReqizitionID, @SRRefID, @Reason);
+END
+GO
+
+
+CREATE TABLE [dbo].[DeleteSample](
+	DeleteID [int] IDENTITY(1,1) NOT NULL,
+	[SampleReqizitionID] [int] NULL,
+	[SRRefID] [varchar](255) NULL,
+	[Reason] [varchar](255) NULL,
+	[InsertedDate] [datetime] NOT NULL DEFAULT GETDATE(),
+) ON [PRIMARY]
+GO
